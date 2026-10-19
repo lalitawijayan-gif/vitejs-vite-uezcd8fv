@@ -99,7 +99,6 @@ const XCircle = ({ className }) => (
   </IconWrapper>
 );
 
-// Fallback Local Storage Persistence
 const getLocalData = (key, defaultVal) => {
   try {
     const item = localStorage.getItem('mandarin_kids_' + key);
@@ -116,7 +115,6 @@ const setLocalData = (key, val) => {
 };
 
 export default function App() {
-  // Inject Tailwind CSS
   useEffect(() => {
     if (!document.getElementById('tailwind-cdn')) {
       const script = document.createElement('script');
@@ -126,24 +124,20 @@ export default function App() {
     }
   }, []);
 
-  // Auth States
-  const [authRole, setAuthRole] = useState(null); // 'guru' | 'ortu'
+  const [authRole, setAuthRole] = useState(null);
   const [activeParentStudentId, setActiveParentStudentId] = useState(null);
   
-  // Login Form States
-  const [loginType, setLoginType] = useState('guru'); // 'guru' | 'ortu'
+  const [loginType, setLoginType] = useState('guru');
   const [inputEmail, setInputEmail] = useState('');
   const [inputPassword, setInputPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
 
-  // App Master Data
   const [students, setStudents] = useState(() => getLocalData('students', [
     { id: 'std_demo_1', name: 'Budi Santoso', parentEmail: 'budi@gmail.com', parentPassword: 'Budi123' },
     { id: 'std_demo_2', name: 'Siti Rahma', parentEmail: 'siti@gmail.com', parentPassword: 'Siti123' }
   ]));
   
-  // Attendance records per private student: [{ id, studentId, date, status: 'hadir'|'izin'|'sakit'|'alpa', notes: '' }]
   const [attendance, setAttendance] = useState(() => getLocalData('attendance', [
     {
       id: 'att_demo_1',
@@ -183,18 +177,15 @@ export default function App() {
     }
   ]));
 
-  // UI Active Navigation
-  const [activeTab, setActiveTab] = useState('reports'); // 'reports' | 'attendance' | 'students'
+  const [activeTab, setActiveTab] = useState('reports');
   const [selectedStudentId, setSelectedStudentId] = useState(students[0]?.id || '');
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
   const [printReportData, setPrintReportData] = useState(null);
 
-  // Form States - Student Creation
   const [newStudentName, setNewStudentName] = useState('');
   const [newParentEmail, setNewParentEmail] = useState('');
   const [newParentPassword, setNewParentPassword] = useState('');
 
-  // Form States - Lesson Report
   const [reportDate, setReportDate] = useState(new Date().toISOString().split('T')[0]);
   const [reportTopic, setReportTopic] = useState('');
   const [vocabList, setVocabList] = useState([{ hanzi: '', pinyin: '', arti: '' }]);
@@ -204,16 +195,13 @@ export default function App() {
   const [teacherNotes, setTeacherNotes] = useState('');
   const [nextPlan, setNextPlan] = useState('');
 
-  // Form States - Manual Private Attendance Input by Guru
   const [attStudentId, setAttStudentId] = useState(students[0]?.id || '');
   const [attDate, setAttDate] = useState(new Date().toISOString().split('T')[0]);
   const [attStatus, setAttStatus] = useState('hadir');
   const [attNotes, setAttNotes] = useState('');
 
-  // Parent Dashboard View Tab
-  const [parentActiveTab, setParentActiveTab] = useState('reports'); // 'reports' | 'attendance'
+  const [parentActiveTab, setParentActiveTab] = useState('reports');
 
-  // Sync to localStorage
   useEffect(() => { setLocalData('students', students); }, [students]);
   useEffect(() => { setLocalData('attendance', attendance); }, [attendance]);
   useEffect(() => { setLocalData('reports', reports); }, [reports]);
@@ -239,7 +227,7 @@ export default function App() {
         setActiveParentStudentId(matchedStudent.id);
         setSelectedStudentId(matchedStudent.id);
       } else {
-        setLoginError('Email atau Password Orang Tua tidak ditemukan / belum didaftarkan oleh Guru.');
+        setLoginError('Email atau Password Orang Tua tidak ditemukan.');
       }
     }
   };
@@ -277,10 +265,10 @@ export default function App() {
   };
 
   const deleteStudent = (id) => {
-    if (confirm('Yakin ingin menghapus data murid ini beserta laporan dan akunnya?')) {
+    if (confirm('Yakin ingin menghapus data murid ini?')) {
       setStudents(students.filter(s => s.id !== id));
       setReports(reports.filter(r => r.studentId !== id));
-      setAttendance(attendance.filter(a => a.studentId !== id));
+      setAttendance(attendance.filter(a => a.id !== id));
       if (selectedStudentId === id) {
         setSelectedStudentId(students.find(s => s.id !== id)?.id || '');
       }
@@ -291,9 +279,8 @@ export default function App() {
     e.preventDefault();
     if (!selectedStudentId || !reportTopic) return;
 
-    const newReportId = 'rep_' + Date.now();
     const newReport = {
-      id: newReportId,
+      id: 'rep_' + Date.now(),
       studentId: selectedStudentId,
       date: reportDate,
       topic: reportTopic,
@@ -307,8 +294,6 @@ export default function App() {
     };
 
     setReports([newReport, ...reports]);
-
-    // Reset Form
     setReportTopic('');
     setVocabList([{ hanzi: '', pinyin: '', arti: '' }]);
     setSentenceList(['']);
@@ -362,16 +347,10 @@ export default function App() {
     return (
       <div className="min-h-screen bg-stone-100 p-4 md:p-10 text-stone-800 flex flex-col items-center">
         <div className="w-full max-w-[21cm] mb-6 flex justify-between items-center print:hidden">
-          <button 
-            onClick={() => setPrintReportData(null)}
-            className="px-4 py-2 bg-stone-200 hover:bg-stone-300 rounded-xl text-xs font-semibold transition cursor-pointer"
-          >
+          <button onClick={() => setPrintReportData(null)} className="px-4 py-2 bg-stone-200 hover:bg-stone-300 rounded-xl text-xs font-semibold cursor-pointer">
             ← Kembali ke Dashboard
           </button>
-          <button 
-            onClick={() => window.print()}
-            className="px-6 py-2.5 bg-[#8A9A86] hover:bg-[#788874] text-white font-medium rounded-xl shadow-md flex items-center gap-2 transition cursor-pointer text-xs"
-          >
+          <button onClick={() => window.print()} className="px-6 py-2.5 bg-[#8A9A86] text-white font-medium rounded-xl shadow-md flex items-center gap-2 cursor-pointer text-xs">
             <Printer className="w-4 h-4" /> Cetak / Simpan PDF (A4)
           </button>
         </div>
@@ -402,9 +381,8 @@ export default function App() {
             </div>
           </div>
 
-          {/* Kosakata */}
           <div className="mb-6">
-            <h2 className="text-xs font-bold text-stone-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <h2 className="text-xs font-bold text-stone-700 uppercase mb-3 flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-[#8A9A86]" /> Kosakata Baru (生词)
             </h2>
             <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
@@ -426,27 +404,22 @@ export default function App() {
                       </tr>
                     ))
                   ) : (
-                    <tr>
-                      <td colSpan="3" className="p-3 text-center text-stone-400 text-xs">Tidak ada kosakata baru</td>
-                    </tr>
+                    <tr><td colSpan="3" className="p-3 text-center text-stone-400 text-xs">Tidak ada kosakata baru</td></tr>
                   )}
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* Pola Kalimat */}
           <div className="mb-6">
-            <h2 className="text-xs font-bold text-stone-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <h2 className="text-xs font-bold text-stone-700 uppercase mb-3 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-[#8A9A86]" /> Pola Kalimat / Praktik (句型)
             </h2>
             <div className="bg-white p-4 rounded-xl border border-stone-200 space-y-2">
               {printReportData.sentences && printReportData.sentences.length > 0 ? (
                 printReportData.sentences.map((s, i) => (
                   <div key={i} className="flex items-start gap-3 text-xs text-stone-700 bg-stone-50 p-2.5 rounded-lg border border-stone-100">
-                    <span className="w-4 h-4 rounded-full bg-[#8A9A86]/20 text-[#8A9A86] font-bold text-[10px] flex items-center justify-center shrink-0">
-                      {i + 1}
-                    </span>
+                    <span className="w-4 h-4 rounded-full bg-[#8A9A86]/20 text-[#8A9A86] font-bold text-[10px] flex items-center justify-center shrink-0">{i + 1}</span>
                     <p>{s}</p>
                   </div>
                 ))
@@ -456,21 +429,15 @@ export default function App() {
             </div>
           </div>
 
-          {/* Evaluation */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="space-y-4">
               <div className="bg-white p-4 rounded-xl border border-stone-200">
                 <h3 className="text-[11px] font-bold text-stone-500 uppercase mb-2">Tingkat Pemahaman Anak</h3>
                 <div className="flex items-center gap-1.5 my-2">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <Star 
-                      key={star} 
-                      className={`w-5 h-5 ${star <= printReportData.comprehension ? 'text-amber-400 fill-amber-400' : 'text-stone-200'}`} 
-                    />
+                    <Star key={star} className={`w-5 h-5 ${star <= printReportData.comprehension ? 'text-amber-400 fill-amber-400' : 'text-stone-200'}`} />
                   ))}
-                  <span className="ml-2 text-xs font-semibold text-stone-700">
-                    {printReportData.comprehension} / 5
-                  </span>
+                  <span className="ml-2 text-xs font-semibold text-stone-700">{printReportData.comprehension} / 5</span>
                 </div>
               </div>
 
@@ -493,18 +460,14 @@ export default function App() {
             <div className="bg-white p-4 rounded-xl border border-stone-200 flex flex-col justify-between">
               <div>
                 <h3 className="text-[11px] font-bold text-stone-500 uppercase mb-2">Catatan Evaluasi Guru</h3>
-                <p className="text-xs text-stone-700 whitespace-pre-line">
-                  {printReportData.teacherNotes || 'Tidak ada catatan tambahan.'}
-                </p>
+                <p className="text-xs text-stone-700 whitespace-pre-line">{printReportData.teacherNotes || 'Tidak ada catatan tambahan.'}</p>
               </div>
             </div>
           </div>
 
           <div className="bg-emerald-900/5 p-4 rounded-xl border border-emerald-900/10 mb-6">
             <h3 className="text-[11px] font-bold text-[#8A9A86] uppercase mb-1">Rencana Sesi Berikutnya / PR</h3>
-            <p className="text-xs text-stone-700 font-medium">
-              {printReportData.nextPlan || 'Akan disampaikan pada sesi berikutnya.'}
-            </p>
+            <p className="text-xs text-stone-700 font-medium">{printReportData.nextPlan || 'Akan disampaikan pada sesi berikutnya.'}</p>
           </div>
         </div>
       </div>
@@ -513,75 +476,28 @@ export default function App() {
 
   if (!authRole) {
     return (
-      <div 
-        className="min-h-screen flex items-center justify-center p-4 font-sans text-stone-800" 
-        style={{ 
-          backgroundColor: '#FEFAE0', 
-          minHeight: '100vh', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          fontFamily: 'sans-serif'
-        }}
-      >
-        <div 
-          className="w-full max-w-sm bg-white rounded-3xl shadow-xl border border-stone-200 overflow-hidden" 
-          style={{ 
-            backgroundColor: '#ffffff', 
-            borderRadius: '1.5rem', 
-            maxWidth: '22rem', 
-            width: '100%', 
-            overflow: 'hidden',
-            boxShadow: '0 20px 25px -5px rgba(138, 154, 134, 0.15)'
-          }}
-        >
-          {/* Cute Header Banner */}
-          <div 
-            className="p-6 text-center text-white relative" 
-            style={{ backgroundColor: '#8A9A86', textAlign: 'center', color: '#ffffff' }}
-          >
-            {/* Cute Small Panda Badge */}
-            <div 
-              className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl mx-auto flex items-center justify-center text-2xl mb-2 border border-white/30"
-              style={{ width: '3rem', height: '3rem', margin: '0 auto 0.5rem auto', display: 'flex', alignItems: 'center', justifyCenter: 'center', fontSize: '1.5rem', borderRadius: '1rem' }}
-            >
+      <div className="min-h-screen flex items-center justify-center p-4 font-sans text-stone-800" style={{ backgroundColor: '#FEFAE0', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="w-full max-w-sm bg-white rounded-3xl shadow-xl border border-stone-200 overflow-hidden" style={{ backgroundColor: '#ffffff', borderRadius: '1.5rem', maxWidth: '22rem', width: '100%' }}>
+          <div className="p-6 text-center text-white relative" style={{ backgroundColor: '#8A9A86', textAlign: 'center', color: '#ffffff' }}>
+            <div className="w-12 h-12 bg-white/20 rounded-2xl mx-auto flex items-center justify-center text-2xl mb-2" style={{ width: '3rem', height: '3rem', margin: '0 auto 0.5rem auto', display: 'flex', itemsCenter: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
               🐼
             </div>
-            <h1 className="text-xl font-bold tracking-tight" style={{ fontSize: '1.25rem', fontWeight: '800', margin: 0 }}>宝贝中文</h1>
-            <p className="text-emerald-100 text-[11px] font-medium mt-0.5" style={{ color: '#E6F4EA', fontSize: '0.7rem' }}>Laporan & Absensi Les Private Mandarin</p>
+            <h1 className="text-xl font-bold" style={{ fontSize: '1.25rem', fontWeight: '800', margin: 0 }}>宝贝中文</h1>
+            <p className="text-emerald-100 text-[11px] mt-0.5" style={{ color: '#E6F4EA', fontSize: '0.7rem' }}>Laporan & Absensi Les Private Mandarin</p>
           </div>
 
           <div className="p-5" style={{ padding: '1.25rem' }}>
-            {/* Login Role Toggle */}
-            <div 
-              className="flex p-1 rounded-xl mb-4 border border-stone-200" 
-              style={{ display: 'flex', backgroundColor: '#f5f5f4', padding: '0.25rem', borderRadius: '0.75rem', marginBottom: '1rem' }}
-            >
-              <button
-                onClick={() => { setLoginType('guru'); setLoginError(''); }}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
-                  loginType === 'guru' ? 'bg-white text-[#8A9A86] shadow-xs' : 'text-stone-500'
-                }`}
-                style={{ flex: 1, padding: '0.5rem 0', borderRadius: '0.5rem', fontSize: '0.75rem', cursor: 'pointer', border: 'none', backgroundColor: loginType === 'guru' ? '#ffffff' : 'transparent', color: loginType === 'guru' ? '#8A9A86' : '#78716c', fontWeight: 'bold' }}
-              >
+            <div className="flex p-1 rounded-xl mb-4 border border-stone-200" style={{ display: 'flex', backgroundColor: '#f5f5f4', padding: '0.25rem', borderRadius: '0.75rem', marginBottom: '1rem' }}>
+              <button onClick={() => { setLoginType('guru'); setLoginError(''); }} className={`flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5`} style={{ flex: 1, padding: '0.5rem 0', borderRadius: '0.5rem', fontSize: '0.75rem', cursor: 'pointer', border: 'none', backgroundColor: loginType === 'guru' ? '#ffffff' : 'transparent', color: loginType === 'guru' ? '#8A9A86' : '#78716c', fontWeight: 'bold' }}>
                 <UserCheck className="w-3.5 h-3.5" /> Guru
               </button>
-              <button
-                onClick={() => { setLoginType('ortu'); setLoginError(''); }}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
-                  loginType === 'ortu' ? 'bg-white text-[#8A9A86] shadow-xs' : 'text-stone-500'
-                }`}
-                style={{ flex: 1, padding: '0.5rem 0', borderRadius: '0.5rem', fontSize: '0.75rem', cursor: 'pointer', border: 'none', backgroundColor: loginType === 'ortu' ? '#ffffff' : 'transparent', color: loginType === 'ortu' ? '#8A9A86' : '#78716c', fontWeight: 'bold' }}
-              >
+              <button onClick={() => { setLoginType('ortu'); setLoginError(''); }} className={`flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5`} style={{ flex: 1, padding: '0.5rem 0', borderRadius: '0.5rem', fontSize: '0.75rem', cursor: 'pointer', border: 'none', backgroundColor: loginType === 'ortu' ? '#ffffff' : 'transparent', color: loginType === 'ortu' ? '#8A9A86' : '#78716c', fontWeight: 'bold' }}>
                 <Users className="w-3.5 h-3.5" /> Orang Tua
               </button>
             </div>
 
             {loginError && (
-              <div 
-                className="mb-3 p-2.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2" 
-                style={{ backgroundColor: '#fff1f2', border: '1px solid #fecdd3', color: '#be123c', padding: '0.625rem', borderRadius: '0.75rem', fontSize: '0.7rem', marginBottom: '0.75rem', display: 'flex' }}
-              >
+              <div className="mb-3 p-2.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2" style={{ backgroundColor: '#fff1f2', border: '1px solid #fecdd3', color: '#be123c', padding: '0.625rem', borderRadius: '0.75rem', fontSize: '0.7rem', marginBottom: '0.75rem', display: 'flex' }}>
                 <XCircle className="w-4 h-4 shrink-0" />
                 <span>{loginError}</span>
               </div>
@@ -591,15 +507,7 @@ export default function App() {
               {loginType === 'ortu' && (
                 <div>
                   <label className="block text-[11px] font-semibold text-stone-600 mb-1" style={{ fontSize: '0.7rem', color: '#57534e', marginBottom: '0.25rem' }}>Email Orang Tua</label>
-                  <input
-                    type="email"
-                    required
-                    value={inputEmail}
-                    onChange={(e) => setInputEmail(e.target.value)}
-                    placeholder="Contoh: budi@gmail.com"
-                    className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#8A9A86]"
-                    style={{ width: '100%', padding: '0.625rem 0.75rem', backgroundColor: '#fafaf9', border: '1px solid #e7e5e4', borderRadius: '0.75rem', fontSize: '0.8rem', boxSizing: 'border-box' }}
-                  />
+                  <input type="email" required value={inputEmail} onChange={(e) => setInputEmail(e.target.value)} placeholder="Contoh: budi@gmail.com" className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs" style={{ width: '100%', padding: '0.625rem 0.75rem', backgroundColor: '#fafaf9', border: '1px solid #e7e5e4', borderRadius: '0.75rem', fontSize: '0.8rem', boxSizing: 'border-box' }} />
                 </div>
               )}
 
@@ -608,31 +516,14 @@ export default function App() {
                   Password {loginType === 'guru' ? 'Guru' : 'Orang Tua'}
                 </label>
                 <div className="relative" style={{ position: 'relative' }}>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={inputPassword}
-                    onChange={(e) => setInputPassword(e.target.value)}
-                    placeholder="Masukkan password"
-                    className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#8A9A86] pr-10"
-                    style={{ width: '100%', padding: '0.625rem 2rem 0.625rem 0.75rem', backgroundColor: '#fafaf9', border: '1px solid #e7e5e4', borderRadius: '0.75rem', fontSize: '0.8rem', boxSizing: 'border-box' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-2.5 top-2.5 text-stone-400 hover:text-stone-600"
-                    style={{ position: 'absolute', right: '0.625rem', top: '0.625rem', background: 'none', border: 'none', color: '#a8a29e', cursor: 'pointer' }}
-                  >
+                  <input type={showPassword ? "text" : "password"} required value={inputPassword} onChange={(e) => setInputPassword(e.target.value)} placeholder="Masukkan password" className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs pr-10" style={{ width: '100%', padding: '0.625rem 2rem 0.625rem 0.75rem', backgroundColor: '#fafaf9', border: '1px solid #e7e5e4', borderRadius: '0.75rem', fontSize: '0.8rem', boxSizing: 'border-box' }} />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '0.625rem', top: '0.625rem', background: 'none', border: 'none', color: '#a8a29e', cursor: 'pointer' }}>
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
-              <button
-                type="submit"
-                className="w-full py-2.5 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-2 mt-1 cursor-pointer"
-                style={{ width: '100%', padding: '0.75rem 0', backgroundColor: '#8A9A86', color: '#ffffff', fontWeight: 'bold', fontSize: '0.8rem', borderRadius: '0.75rem', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyCenter: 'center' }}
-              >
+              <button type="submit" className="w-full py-2.5 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-2 mt-1 cursor-pointer" style={{ width: '100%', padding: '0.75rem 0', backgroundColor: '#8A9A86', color: '#ffffff', fontWeight: 'bold', fontSize: '0.8rem', borderRadius: '0.75rem', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 Masuk Dashboard →
               </button>
             </form>
@@ -646,7 +537,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-stone-50 font-sans text-stone-800 pb-12">
-      {/* Header */}
       <header className="bg-white border-b border-stone-200 sticky top-0 z-30 shadow-xs">
         <div className="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-2.5">
@@ -661,211 +551,98 @@ export default function App() {
             </div>
           </div>
 
-          <button
-            onClick={handleLogout}
-            className="px-3 py-1.5 border border-stone-200 hover:bg-rose-50 text-stone-600 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
-          >
+          <button onClick={handleLogout} className="px-3 py-1.5 border border-stone-200 hover:bg-rose-50 text-stone-600 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
             <LogOut className="w-3.5 h-3.5" /> Keluar
           </button>
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-5xl mx-auto px-4 mt-6">
         {authRole === 'guru' && (
           <div className="space-y-6">
-            {/* Navigation Tabs */}
             <div className="bg-white p-3 rounded-2xl border border-stone-200 flex flex-wrap justify-between items-center gap-3 shadow-xs">
               <div className="flex bg-stone-100 p-1 rounded-xl gap-1">
-                <button
-                  onClick={() => setActiveTab('reports')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                    activeTab === 'reports' ? 'bg-white text-[#8A9A86] shadow-xs' : 'text-stone-500 hover:text-stone-700'
-                  }`}
-                >
+                <button onClick={() => setActiveTab('reports')} className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer ${activeTab === 'reports' ? 'bg-white text-[#8A9A86] shadow-xs' : 'text-stone-500'}`}>
                   📝 Input Laporan Sesi
                 </button>
-                <button
-                  onClick={() => setActiveTab('attendance')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                    activeTab === 'attendance' ? 'bg-white text-[#8A9A86] shadow-xs' : 'text-stone-500 hover:text-stone-700'
-                  }`}
-                >
+                <button onClick={() => setActiveTab('attendance')} className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer ${activeTab === 'attendance' ? 'bg-white text-[#8A9A86] shadow-xs' : 'text-stone-500'}`}>
                   📅 Input Absensi Private
                 </button>
-                <button
-                  onClick={() => setActiveTab('students')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                    activeTab === 'students' ? 'bg-white text-[#8A9A86] shadow-xs' : 'text-stone-500 hover:text-stone-700'
-                  }`}
-                >
+                <button onClick={() => setActiveTab('students')} className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer ${activeTab === 'students' ? 'bg-white text-[#8A9A86] shadow-xs' : 'text-stone-500'}`}>
                   👶 Kelola Murid ({students.length})
                 </button>
               </div>
 
-              <button
-                onClick={() => setShowAddStudentModal(true)}
-                className="px-3.5 py-1.5 bg-[#8A9A86] hover:bg-[#788874] text-white text-xs font-bold rounded-xl flex items-center gap-1 transition shadow-xs cursor-pointer"
-              >
+              <button onClick={() => setShowAddStudentModal(true)} className="px-3.5 py-1.5 bg-[#8A9A86] text-white text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer">
                 <Plus className="w-3.5 h-3.5" /> Tambah Murid
               </button>
             </div>
 
-            {/* TAB 1: REPORTS & PRACTICE SCORES */}
             {activeTab === 'reports' && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* Form Input Sesi Les Private */}
                 <div className="lg:col-span-5 bg-white p-5 rounded-2xl border border-stone-200 space-y-4 shadow-xs">
-                  <h2 className="text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center gap-2 border-b pb-3">
+                  <h2 className="text-xs font-bold text-stone-800 uppercase flex items-center gap-2 border-b pb-3">
                     <FileText className="w-4 h-4 text-[#8A9A86]" /> Input Sesi Les Private
                   </h2>
 
                   <form onSubmit={saveReport} className="space-y-3">
                     <div>
                       <label className="block text-xs font-semibold text-stone-600 mb-1">Pilih Murid Private</label>
-                      <select
-                        value={selectedStudentId}
-                        onChange={(e) => setSelectedStudentId(e.target.value)}
-                        className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium"
-                        required
-                      >
-                        {students.map(s => (
-                          <option key={s.id} value={s.id}>{s.name}</option>
-                        ))}
+                      <select value={selectedStudentId} onChange={(e) => setSelectedStudentId(e.target.value)} className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium" required>
+                        {students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                       </select>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2.5">
                       <div>
                         <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tanggal Sesi</label>
-                        <input
-                          type="date"
-                          value={reportDate}
-                          onChange={(e) => setReportDate(e.target.value)}
-                          className="w-full px-2.5 py-1.5 bg-stone-50 border border-stone-200 rounded-xl text-xs"
-                          required
-                        />
+                        <input type="date" value={reportDate} onChange={(e) => setReportDate(e.target.value)} className="w-full px-2.5 py-1.5 bg-stone-50 border border-stone-200 rounded-xl text-xs" required />
                       </div>
                       <div>
                         <label className="block text-[11px] font-semibold text-stone-600 mb-1">Nilai Latihan (0-100)</label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          value={practiceScore}
-                          onChange={(e) => setPracticeScore(e.target.value)}
-                          className="w-full px-2.5 py-1.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-[#8A9A86]"
-                          required
-                        />
+                        <input type="number" min="0" max="100" value={practiceScore} onChange={(e) => setPracticeScore(e.target.value)} className="w-full px-2.5 py-1.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-[#8A9A86]" required />
                       </div>
                     </div>
 
                     <div>
                       <label className="block text-[11px] font-semibold text-stone-600 mb-1">Materi / Bab Hari Ini</label>
-                      <input
-                        type="text"
-                        placeholder="Contoh: Bab 2 - Anggota Keluarga"
-                        value={reportTopic}
-                        onChange={(e) => setReportTopic(e.target.value)}
-                        className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs"
-                        required
-                      />
+                      <input type="text" placeholder="Contoh: Bab 2 - Anggota Keluarga" value={reportTopic} onChange={(e) => setReportTopic(e.target.value)} className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs" required />
                     </div>
 
-                    {/* Vocab Section */}
                     <div className="space-y-2 border-t pt-3">
                       <div className="flex justify-between items-center">
                         <label className="text-xs font-bold text-stone-700">Kosakata Baru (Hanzi - Pinyin - Arti)</label>
-                        <button
-                          type="button"
-                          onClick={addVocabRow}
-                          className="text-[11px] text-[#8A9A86] font-bold flex items-center gap-0.5 hover:underline cursor-pointer"
-                        >
-                          <Plus className="w-3 h-3" /> Tambah
-                        </button>
+                        <button type="button" onClick={addVocabRow} className="text-[11px] text-[#8A9A86] font-bold flex items-center gap-0.5 hover:underline cursor-pointer"><Plus className="w-3 h-3" /> Tambah</button>
                       </div>
                       {vocabList.map((v, i) => (
                         <div key={i} className="flex gap-1.5 items-center">
-                          <input
-                            type="text"
-                            placeholder="Hanzi (爸爸)"
-                            value={v.hanzi}
-                            onChange={(e) => updateVocab(i, 'hanzi', e.target.value)}
-                            className="w-1/3 px-2 py-1.5 bg-stone-50 border border-stone-200 rounded-lg text-xs"
-                          />
-                          <input
-                            type="text"
-                            placeholder="Pinyin (bàba)"
-                            value={v.pinyin}
-                            onChange={(e) => updateVocab(i, 'pinyin', e.target.value)}
-                            className="w-1/3 px-2 py-1.5 bg-stone-50 border border-stone-200 rounded-lg text-xs"
-                          />
-                          <input
-                            type="text"
-                            placeholder="Arti (Ayah)"
-                            value={v.arti}
-                            onChange={(e) => updateVocab(i, 'arti', e.target.value)}
-                            className="w-1/3 px-2 py-1.5 bg-stone-50 border border-stone-200 rounded-lg text-xs"
-                          />
-                          {vocabList.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => removeVocabRow(i)}
-                              className="text-rose-400 hover:text-rose-600 p-1 cursor-pointer"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          )}
+                          <input type="text" placeholder="Hanzi" value={v.hanzi} onChange={(e) => updateVocab(i, 'hanzi', e.target.value)} className="w-1/3 px-2 py-1.5 bg-stone-50 border border-stone-200 rounded-lg text-xs" />
+                          <input type="text" placeholder="Pinyin" value={v.pinyin} onChange={(e) => updateVocab(i, 'pinyin', e.target.value)} className="w-1/3 px-2 py-1.5 bg-stone-50 border border-stone-200 rounded-lg text-xs" />
+                          <input type="text" placeholder="Arti" value={v.arti} onChange={(e) => updateVocab(i, 'arti', e.target.value)} className="w-1/3 px-2 py-1.5 bg-stone-50 border border-stone-200 rounded-lg text-xs" />
+                          {vocabList.length > 1 && <button type="button" onClick={() => removeVocabRow(i)} className="text-rose-400 p-1 cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>}
                         </div>
                       ))}
                     </div>
 
-                    {/* Sentences Section */}
                     <div className="space-y-2 border-t pt-3">
                       <div className="flex justify-between items-center">
                         <label className="text-xs font-bold text-stone-700">Pola Kalimat / Latihan</label>
-                        <button
-                          type="button"
-                          onClick={addSentenceRow}
-                          className="text-[11px] text-[#8A9A86] font-bold flex items-center gap-0.5 hover:underline cursor-pointer"
-                        >
-                          <Plus className="w-3 h-3" /> Tambah
-                        </button>
+                        <button type="button" onClick={addSentenceRow} className="text-[11px] text-[#8A9A86] font-bold flex items-center gap-0.5 hover:underline cursor-pointer"><Plus className="w-3 h-3" /> Tambah</button>
                       </div>
                       {sentenceList.map((s, i) => (
                         <div key={i} className="flex gap-2 items-center">
-                          <input
-                            type="text"
-                            placeholder="Contoh: 这是我的爸爸 (Ini adalah ayah saya)"
-                            value={s}
-                            onChange={(e) => updateSentence(i, e.target.value)}
-                            className="flex-1 px-2.5 py-1.5 bg-stone-50 border border-stone-200 rounded-lg text-xs"
-                          />
-                          {sentenceList.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => removeSentenceRow(i)}
-                              className="text-rose-400 hover:text-rose-600 p-1 cursor-pointer"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          )}
+                          <input type="text" placeholder="Kalimat..." value={s} onChange={(e) => updateSentence(i, e.target.value)} className="flex-1 px-2.5 py-1.5 bg-stone-50 border border-stone-200 rounded-lg text-xs" />
+                          {sentenceList.length > 1 && <button type="button" onClick={() => removeSentenceRow(i)} className="text-rose-400 p-1 cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>}
                         </div>
                       ))}
                     </div>
 
-                    {/* Rating & Notes */}
                     <div className="space-y-3 border-t pt-3">
                       <div>
                         <label className="block text-[11px] font-semibold text-stone-600 mb-1">Pemahaman Anak (1-5 Star)</label>
                         <div className="flex gap-1.5 items-center">
                           {[1, 2, 3, 4, 5].map((star) => (
-                            <button
-                              key={star}
-                              type="button"
-                              onClick={() => setComprehensionScore(star)}
-                              className="p-0.5 cursor-pointer"
-                            >
+                            <button key={star} type="button" onClick={() => setComprehensionScore(star)} className="p-0.5 cursor-pointer">
                               <Star className={`w-5 h-5 ${star <= comprehensionScore ? 'text-amber-400 fill-amber-400' : 'text-stone-200'}`} />
                             </button>
                           ))}
@@ -875,46 +652,28 @@ export default function App() {
 
                       <div>
                         <label className="block text-[11px] font-semibold text-stone-600 mb-1">Catatan Evaluasi Guru</label>
-                        <textarea
-                          rows="2"
-                          placeholder="Catatan keaktifan dan perkembangan anak..."
-                          value={teacherNotes}
-                          onChange={(e) => setTeacherNotes(e.target.value)}
-                          className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs"
-                        ></textarea>
+                        <textarea rows="2" placeholder="Catatan keaktifan..." value={teacherNotes} onChange={(e) => setTeacherNotes(e.target.value)} className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs"></textarea>
                       </div>
 
                       <div>
                         <label className="block text-[11px] font-semibold text-stone-600 mb-1">Materi Sesi Berikutnya / PR</label>
-                        <input
-                          type="text"
-                          placeholder="PR rumah atau materi sesi selanjutnya"
-                          value={nextPlan}
-                          onChange={(e) => setNextPlan(e.target.value)}
-                          className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs"
-                        />
+                        <input type="text" placeholder="PR atau materi berikutnya" value={nextPlan} onChange={(e) => setNextPlan(e.target.value)} className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs" />
                       </div>
                     </div>
 
-                    <button
-                      type="submit"
-                      className="w-full py-2.5 bg-[#8A9A86] hover:bg-[#788874] text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
-                    >
+                    <button type="submit" className="w-full py-2.5 bg-[#8A9A86] hover:bg-[#788874] text-white font-bold text-xs rounded-xl cursor-pointer">
                       💾 Simpan Laporan Sesi Private
                     </button>
                   </form>
                 </div>
 
-                {/* Reports History Right Panel */}
                 <div className="lg:col-span-7 space-y-4">
                   <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-xs flex justify-between items-center">
-                    <h2 className="text-xs font-bold text-stone-800 uppercase tracking-wider">📋 Riwayat Laporan Sesi ({reports.length})</h2>
+                    <h2 className="text-xs font-bold text-stone-800 uppercase">📋 Riwayat Laporan Sesi ({reports.length})</h2>
                   </div>
 
                   {reports.length === 0 ? (
-                    <div className="bg-white p-8 rounded-2xl border border-stone-200 text-center text-stone-400 text-xs">
-                      Belum ada laporan sesi private. Silakan isi form di sebelah kiri!
-                    </div>
+                    <div className="bg-white p-8 rounded-2xl border border-stone-200 text-center text-stone-400 text-xs">Belum ada laporan.</div>
                   ) : (
                     reports.map((rep) => {
                       const student = students.find(s => s.id === rep.studentId);
@@ -922,30 +681,19 @@ export default function App() {
                         <div key={rep.id} className="bg-white p-4 rounded-2xl border border-stone-200 space-y-3 shadow-xs">
                           <div className="flex justify-between items-start border-b pb-2.5">
                             <div>
-                              <span className="inline-block bg-[#FEFAE0] text-[#8A9A86] font-bold text-[10px] px-2.5 py-0.5 rounded-full mb-1">
-                                {student?.name || 'Murid'}
-                              </span>
+                              <span className="inline-block bg-[#FEFAE0] text-[#8A9A86] font-bold text-[10px] px-2.5 py-0.5 rounded-full mb-1">{student?.name || 'Murid'}</span>
                               <h3 className="font-bold text-stone-800 text-sm">{rep.topic}</h3>
                             </div>
                             <span className="text-[11px] text-stone-400 font-medium">{rep.date}</span>
                           </div>
 
                           <div className="grid grid-cols-2 gap-2 bg-stone-50 p-2.5 rounded-xl border border-stone-100 text-xs">
-                            <div className="flex items-center gap-1.5">
-                              <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                              <span className="text-stone-600">Pemahaman: <strong>{rep.comprehension}/5</strong></span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <Award className="w-3.5 h-3.5 text-[#8A9A86]" />
-                              <span className="text-stone-600">Nilai: <strong>{rep.practiceScore ?? '-'}</strong></span>
-                            </div>
+                            <div className="flex items-center gap-1.5"><Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" /><span className="text-stone-600">Pemahaman: <strong>{rep.comprehension}/5</strong></span></div>
+                            <div className="flex items-center gap-1.5"><Award className="w-3.5 h-3.5 text-[#8A9A86]" /><span className="text-stone-600">Nilai: <strong>{rep.practiceScore ?? '-'}</strong></span></div>
                           </div>
 
                           <div className="flex justify-end gap-2 pt-1">
-                            <button
-                              onClick={() => setPrintReportData(rep)}
-                              className="px-3 py-1.5 bg-[#8A9A86]/10 text-[#8A9A86] hover:bg-[#8A9A86]/20 text-xs font-bold rounded-xl flex items-center gap-1 transition cursor-pointer"
-                            >
+                            <button onClick={() => setPrintReportData(rep)} className="px-3 py-1.5 bg-[#8A9A86]/10 text-[#8A9A86] text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer">
                               <Printer className="w-3.5 h-3.5" /> Cetak A4 / PDF
                             </button>
                           </div>
@@ -957,39 +705,24 @@ export default function App() {
               </div>
             )}
 
-            {/* TAB 2: MANUAL PRIVATE ATTENDANCE (ABSENSI PRIVATE PER MURID) */}
             {activeTab === 'attendance' && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* Form Input Absensi Private Manual */}
                 <div className="lg:col-span-5 bg-white p-5 rounded-2xl border border-stone-200 space-y-4 shadow-xs">
-                  <h2 className="text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center gap-2 border-b pb-3">
+                  <h2 className="text-xs font-bold text-stone-800 uppercase flex items-center gap-2 border-b pb-3">
                     <Calendar className="w-4 h-4 text-[#8A9A86]" /> Input Presensi Private Manual
                   </h2>
 
                   <form onSubmit={saveManualAttendance} className="space-y-3">
                     <div>
                       <label className="block text-xs font-semibold text-stone-600 mb-1">Pilih Murid Private</label>
-                      <select
-                        value={attStudentId}
-                        onChange={(e) => setAttStudentId(e.target.value)}
-                        className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium"
-                        required
-                      >
-                        {students.map(s => (
-                          <option key={s.id} value={s.id}>{s.name}</option>
-                        ))}
+                      <select value={attStudentId} onChange={(e) => setAttStudentId(e.target.value)} className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium" required>
+                        {students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                       </select>
                     </div>
 
                     <div>
                       <label className="block text-xs font-semibold text-stone-600 mb-1">Tanggal Les Sesi Ini</label>
-                      <input
-                        type="date"
-                        value={attDate}
-                        onChange={(e) => setAttDate(e.target.value)}
-                        className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-semibold text-stone-700"
-                        required
-                      />
+                      <input type="date" value={attDate} onChange={(e) => setAttDate(e.target.value)} className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-semibold" required />
                     </div>
 
                     <div>
@@ -1001,16 +734,7 @@ export default function App() {
                           { key: 'sakit', label: 'Sakit', bg: 'bg-blue-500' },
                           { key: 'alpa', label: 'Alpa', bg: 'bg-rose-500' }
                         ].map((opt) => (
-                          <button
-                            key={opt.key}
-                            type="button"
-                            onClick={() => setAttStatus(opt.key)}
-                            className={`py-2 px-3 rounded-xl text-xs font-bold transition cursor-pointer ${
-                              attStatus === opt.key
-                                ? `${opt.bg} text-white shadow-xs`
-                                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                            }`}
-                          >
+                          <button key={opt.key} type="button" onClick={() => setAttStatus(opt.key)} className={`py-2 px-3 rounded-xl text-xs font-bold cursor-pointer ${attStatus === opt.key ? `${opt.bg} text-white` : 'bg-stone-100 text-stone-600'}`}>
                             {opt.label}
                           </button>
                         ))}
@@ -1019,34 +743,22 @@ export default function App() {
 
                     <div>
                       <label className="block text-xs font-semibold text-stone-600 mb-1">Catatan Kehadiran (Opsional)</label>
-                      <input
-                        type="text"
-                        placeholder="Contoh: Datang jam 15:30 WIB"
-                        value={attNotes}
-                        onChange={(e) => setAttNotes(e.target.value)}
-                        className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs"
-                      />
+                      <input type="text" placeholder="Contoh: Datang jam 15:30 WIB" value={attNotes} onChange={(e) => setAttNotes(e.target.value)} className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs" />
                     </div>
 
-                    <button
-                      type="submit"
-                      className="w-full py-2.5 bg-[#8A9A86] hover:bg-[#788874] text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
-                    >
+                    <button type="submit" className="w-full py-2.5 bg-[#8A9A86] hover:bg-[#788874] text-white font-bold text-xs rounded-xl cursor-pointer">
                       💾 Catat Presensi Sesi Les
                     </button>
                   </form>
                 </div>
 
-                {/* History Absensi */}
                 <div className="lg:col-span-7 space-y-4">
                   <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-xs flex justify-between items-center">
-                    <h2 className="text-xs font-bold text-stone-800 uppercase tracking-wider">📅 Riwayat Absensi Sesi Private ({attendance.length})</h2>
+                    <h2 className="text-xs font-bold text-stone-800 uppercase">📅 Riwayat Absensi Sesi Private ({attendance.length})</h2>
                   </div>
 
                   {attendance.length === 0 ? (
-                    <div className="bg-white p-8 rounded-2xl border border-stone-200 text-center text-stone-400 text-xs">
-                      Belum ada catatan absensi sesi private.
-                    </div>
+                    <div className="bg-white p-8 rounded-2xl border border-stone-200 text-center text-stone-400 text-xs">Belum ada catatan absensi.</div>
                   ) : (
                     <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden divide-y divide-stone-100">
                       {attendance.map((att) => {
@@ -1057,26 +769,17 @@ export default function App() {
                           att.status === 'sakit' ? 'bg-blue-100 text-blue-700' : 'bg-rose-100 text-rose-700';
 
                         return (
-                          <div key={att.id} className="p-3.5 flex justify-between items-center hover:bg-stone-50/60 transition">
-                            <div className="space-y-0.5">
+                          <div key={att.id} className="p-3.5 flex justify-between items-center hover:bg-stone-50">
+                            <div>
                               <p className="font-bold text-xs text-stone-800">{student?.name || 'Murid'}</p>
                               <div className="flex items-center gap-2 text-[11px] text-stone-400">
                                 <span>Tanggal: <strong>{att.date}</strong></span>
                                 {att.notes && <span>• {att.notes}</span>}
                               </div>
                             </div>
-
                             <div className="flex items-center gap-2">
-                              <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold capitalize ${badgeColor}`}>
-                                {att.status}
-                              </span>
-                              <button
-                                onClick={() => deleteAttendanceRecord(att.id)}
-                                className="text-rose-400 hover:text-rose-600 p-1 cursor-pointer"
-                                title="Hapus catatan"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                              <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold capitalize ${badgeColor}`}>{att.status}</span>
+                              <button onClick={() => deleteAttendanceRecord(att.id)} className="text-rose-400 hover:text-rose-600 p-1 cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
                             </div>
                           </div>
                         );
@@ -1087,18 +790,14 @@ export default function App() {
               </div>
             )}
 
-            {/* TAB 3: MANAGE STUDENTS & PARENTS */}
             {activeTab === 'students' && (
               <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs space-y-4">
                 <div className="flex justify-between items-center border-b pb-3">
                   <div>
                     <h2 className="text-sm font-bold text-stone-800">👶 Kelola Data Murid Private & Akun Ortu</h2>
-                    <p className="text-xs text-stone-400 mt-0.5">Daftarkan murid dan tentukan password khusus agar orang tua dapat login sendiri</p>
+                    <p className="text-xs text-stone-400 mt-0.5">Daftarkan murid dan buatkan akun orang tua</p>
                   </div>
-                  <button
-                    onClick={() => setShowAddStudentModal(true)}
-                    className="px-3.5 py-1.5 bg-[#8A9A86] hover:bg-[#788874] text-white text-xs font-bold rounded-xl flex items-center gap-1 transition shadow-xs cursor-pointer"
-                  >
+                  <button onClick={() => setShowAddStudentModal(true)} className="px-3.5 py-1.5 bg-[#8A9A86] text-white text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer">
                     <Plus className="w-3.5 h-3.5" /> Tambah Murid
                   </button>
                 </div>
@@ -1112,13 +811,7 @@ export default function App() {
                         <p className="text-[11px] text-stone-500">Password Login: <code className="bg-stone-200 px-1.5 py-0.5 rounded text-[10px]">{std.parentPassword}</code></p>
                       </div>
 
-                      <button
-                        onClick={() => deleteStudent(std.id)}
-                        className="text-rose-400 hover:text-rose-600 p-1 hover:bg-rose-50 rounded-lg transition cursor-pointer"
-                        title="Hapus Murid"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <button onClick={() => deleteStudent(std.id)} className="text-rose-400 hover:text-rose-600 p-1 cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
                     </div>
                   ))}
                 </div>
@@ -1127,25 +820,14 @@ export default function App() {
           </div>
         )}
 
-        {/* PARENT DASHBOARD */}
         {authRole === 'ortu' && (
           <div className="space-y-6">
             <div className="bg-white p-3 rounded-2xl border border-stone-200 flex justify-between items-center shadow-xs">
               <div className="flex bg-stone-100 p-1 rounded-xl gap-1">
-                <button
-                  onClick={() => setParentActiveTab('reports')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                    parentActiveTab === 'reports' ? 'bg-white text-[#8A9A86] shadow-xs' : 'text-stone-500 hover:text-stone-700'
-                  }`}
-                >
+                <button onClick={() => setParentActiveTab('reports')} className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer ${parentActiveTab === 'reports' ? 'bg-white text-[#8A9A86] shadow-xs' : 'text-stone-500'}`}>
                   📝 Laporan Belajar & Nilai
                 </button>
-                <button
-                  onClick={() => setParentActiveTab('attendance')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                    parentActiveTab === 'attendance' ? 'bg-white text-[#8A9A86] shadow-xs' : 'text-stone-500 hover:text-stone-700'
-                  }`}
-                >
+                <button onClick={() => setParentActiveTab('attendance')} className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer ${parentActiveTab === 'attendance' ? 'bg-white text-[#8A9A86] shadow-xs' : 'text-stone-500'}`}>
                   📅 Riwayat Absensi Kehadiran
                 </button>
               </div>
@@ -1153,12 +835,10 @@ export default function App() {
 
             {parentActiveTab === 'reports' && (
               <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs space-y-4">
-                <h2 className="text-sm font-bold text-stone-800 border-b pb-3">
-                  Laporan Belajar Sesi Private - {currentStudent?.name}
-                </h2>
+                <h2 className="text-sm font-bold text-stone-800 border-b pb-3">Laporan Belajar - {currentStudent?.name}</h2>
 
                 {reports.filter(r => r.studentId === activeParentStudentId).length === 0 ? (
-                  <p className="text-stone-400 text-xs text-center py-6">Belum ada laporan belajar yang diinput oleh guru.</p>
+                  <p className="text-stone-400 text-xs text-center py-6">Belum ada laporan belajar.</p>
                 ) : (
                   reports.filter(r => r.studentId === activeParentStudentId).map((rep) => (
                     <div key={rep.id} className="p-4 bg-stone-50 rounded-xl border border-stone-200 space-y-3">
@@ -1167,10 +847,7 @@ export default function App() {
                           <p className="font-bold text-xs text-stone-800">{rep.topic}</p>
                           <p className="text-[11px] text-stone-400 mt-0.5">Tanggal Sesi: {rep.date}</p>
                         </div>
-                        <button
-                          onClick={() => setPrintReportData(rep)}
-                          className="px-3 py-1 bg-[#8A9A86] hover:bg-[#788874] text-white text-xs font-bold rounded-xl flex items-center gap-1 transition cursor-pointer"
-                        >
+                        <button onClick={() => setPrintReportData(rep)} className="px-3 py-1 bg-[#8A9A86] text-white text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer">
                           <Printer className="w-3.5 h-3.5" /> Unduh PDF
                         </button>
                       </div>
@@ -1193,9 +870,7 @@ export default function App() {
 
             {parentActiveTab === 'attendance' && (
               <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs space-y-4">
-                <h2 className="text-sm font-bold text-stone-800 border-b pb-3">
-                  Riwayat Absensi Private - {currentStudent?.name}
-                </h2>
+                <h2 className="text-sm font-bold text-stone-800 border-b pb-3">Riwayat Absensi - {currentStudent?.name}</h2>
 
                 {attendance.filter(a => a.studentId === activeParentStudentId).length === 0 ? (
                   <p className="text-stone-400 text-xs text-center py-6">Belum ada catatan absensi.</p>
@@ -1216,9 +891,7 @@ export default function App() {
                               {att.notes && <p className="text-[10px] text-stone-400">{att.notes}</p>}
                             </div>
                           </div>
-                          <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold capitalize ${badgeColor}`}>
-                            {att.status}
-                          </span>
+                          <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold capitalize ${badgeColor}`}>{att.status}</span>
                         </div>
                       );
                     })}
@@ -1230,62 +903,29 @@ export default function App() {
         )}
       </main>
 
-      {/* ADD STUDENT MODAL */}
       {showAddStudentModal && (
-        <div className="fixed inset-0 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-stone-900/40 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-xl border border-stone-200 space-y-3">
             <h3 className="font-bold text-stone-800 text-sm border-b pb-2">👶 Tambah Murid & Buat Akun Ortu</h3>
             <form onSubmit={saveStudent} className="space-y-3">
               <div>
                 <label className="block text-[11px] font-semibold text-stone-600 mb-1">Nama Lengkap Murid</label>
-                <input
-                  type="text"
-                  placeholder="Contoh: Budi Santoso"
-                  value={newStudentName}
-                  onChange={(e) => setNewStudentName(e.target.value)}
-                  className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs"
-                  required
-                />
+                <input type="text" placeholder="Contoh: Budi Santoso" value={newStudentName} onChange={(e) => setNewStudentName(e.target.value)} className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs" required />
               </div>
 
               <div>
                 <label className="block text-[11px] font-semibold text-stone-600 mb-1">Email Orang Tua (Untuk Login)</label>
-                <input
-                  type="email"
-                  placeholder="Contoh: budi@gmail.com"
-                  value={newParentEmail}
-                  onChange={(e) => setNewParentEmail(e.target.value)}
-                  className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs"
-                  required
-                />
+                <input type="email" placeholder="Contoh: budi@gmail.com" value={newParentEmail} onChange={(e) => setNewParentEmail(e.target.value)} className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs" required />
               </div>
 
               <div>
                 <label className="block text-[11px] font-semibold text-stone-600 mb-1">Password Orang Tua</label>
-                <input
-                  type="text"
-                  placeholder="Contoh: Budi123"
-                  value={newParentPassword}
-                  onChange={(e) => setNewParentPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs"
-                  required
-                />
+                <input type="text" placeholder="Contoh: Budi123" value={newParentPassword} onChange={(e) => setNewParentPassword(e.target.value)} className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs" required />
               </div>
 
               <div className="flex gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowAddStudentModal(false)}
-                  className="flex-1 py-2 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-xl text-xs font-bold cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2 bg-[#8A9A86] hover:bg-[#788874] text-white rounded-xl text-xs font-bold cursor-pointer"
-                >
-                  Simpan Murid
-                </button>
+                <button type="button" onClick={() => setShowAddStudentModal(false)} className="flex-1 py-2 bg-stone-100 text-stone-600 rounded-xl text-xs font-bold cursor-pointer">Batal</button>
+                <button type="submit" className="flex-1 py-2 bg-[#8A9A86] text-white rounded-xl text-xs font-bold cursor-pointer">Simpan Murid</button>
               </div>
             </form>
           </div>
